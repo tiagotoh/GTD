@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu GTD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f5f5f7;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.14);
+    --text: #1d1d1f;
+    --text2: #6e6e73;
+    --text3: #aeaeb2;
+    --accent: #0071e3;
+    --accent-light: #e8f0fe;
+    --red: #ff3b30;
+    --orange: #ff9500;
+    --green: #34c759;
+    --blue: #0071e3;
+    --purple: #af52de;
+    --gray: #8e8e93;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-pill: 999px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── CONFIG OVERLAY ── */
+  #config-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(8px);
+  }
+  #config-box {
+    background: var(--surface); border-radius: 20px;
+    padding: 40px; width: 460px; max-width: 92vw;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  }
+  #config-box h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  #config-box p { font-size: 14px; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
+  #config-box label { font-size: 12px; font-weight: 500; color: var(--text2); display: block; margin-bottom: 6px; letter-spacing: 0.02em; text-transform: uppercase; }
+  #config-box input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm); font-size: 14px; font-family: 'SF Mono', monospace;
+    background: var(--surface2); color: var(--text); outline: none; margin-bottom: 16px;
+    transition: border-color 0.15s;
+  }
+  #config-box input:focus { border-color: var(--accent); }
+  #config-box .hint { font-size: 12px; color: var(--text3); margin-top: -10px; margin-bottom: 20px; line-height: 1.5; }
+  #config-box .hint a { color: var(--accent); text-decoration: none; }
+  #config-save {
+    width: 100%; padding: 14px; background: var(--accent); color: white;
+    border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  #config-save:hover { opacity: 0.88; }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px; min-height: 100vh; background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px); border-right: 1px solid var(--border);
+    padding: 28px 16px; position: fixed; top: 0; left: 0; height: 100%;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sidebar-logo {
+    font-size: 17px; font-weight: 600; color: var(--text);
+    padding: 4px 12px 20px; letter-spacing: -0.01em;
+  }
+  .sidebar-logo span { color: var(--accent); }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: background 0.12s;
+    font-size: 14px; font-weight: 400; color: var(--text2);
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(0,0,0,0.04); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; font-size: 11px; font-weight: 600;
+    background: var(--border); color: var(--text2);
+    padding: 1px 7px; border-radius: var(--radius-pill); min-width: 20px; text-align: center;
+  }
+  .nav-item.active .nav-badge { background: var(--accent); color: white; }
+  .sidebar-section {
+    font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 16px 12px 6px;
+  }
+
+  /* ── MAIN ── */
+  .main { margin-left: 240px; flex: 1; padding: 32px 40px; max-width: 900px; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .topbar h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 500; border: none; cursor: pointer;
+    transition: all 0.12s; font-family: var(--font);
+  }
+  .btn-ghost {
+    background: transparent; color: var(--text2);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover { background: var(--surface); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ── FILTER PILLS ── */
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-pill {
+    padding: 5px 14px; border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 400; cursor: pointer;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    color: var(--text2); transition: all 0.12s; user-select: none;
+  }
+  .filter-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-pill.active {
+    background: var(--accent); color: white; border-color: var(--accent); font-weight: 500;
+  }
+
+  /* ── ADD BAR ── */
+  .add-bar {
+    display: flex; gap: 8px; margin-bottom: 20px;
+    background: var(--surface); border-radius: var(--radius);
+    padding: 10px 14px; box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .add-bar input {
+    flex: 1; border: none; outline: none; font-size: 14px;
+    background: transparent; color: var(--text); font-family: var(--font);
+  }
+  .add-bar input::placeholder { color: var(--text3); }
+  .add-bar button {
+    background: var(--accent); color: white; border: none;
+    border-radius: var(--radius-sm); padding: 7px 16px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: var(--font); transition: opacity 0.12s;
+  }
+  .add-bar button:hover { opacity: 0.88; }
+
+  /* ── RECORDS ── */
+  .records { display: flex; flex-direction: column; gap: 1px; }
+  .record {
+    background: var(--surface); border-radius: 0;
+    padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+    transition: background 0.1s; cursor: default;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+  .records .record:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+  .records .record:last-child { border-radius: 0 0 var(--radius) var(--radius); border-bottom: none; }
+  .records .record:only-child { border-radius: var(--radius); border-bottom: none; }
+  .record:hover { background: #fafafa; }
+  .record-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong); cursor: pointer;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; background: transparent;
+  }
+  .record-check:hover { border-color: var(--accent); }
+  .record-check.checked { background: var(--green); border-color: var(--green); }
+  .record-check.checked::after { content: ''; width: 5px; height: 3px; border-left: 1.5px solid white; border-bottom: 1.5px solid white; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .record-body { flex: 1; min-width: 0; }
+  .record-name {
+    font-size: 14px; font-weight: 400; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .record-name.done { color: var(--text3); text-decoration: line-through; }
+  .record-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tag {
+    font-size: 11px; font-weight: 500; padding: 2px 8px;
+    border-radius: var(--radius-pill); white-space: nowrap;
+  }
+  .tag-default { background: var(--surface2); color: var(--text2); }
+  .tag-alta { background: #fff0ee; color: #c0392b; }
+  .tag-media { background: #fff8ee; color: #b7570a; }
+  .tag-baixa { background: #eefaf2; color: #217a40; }
+  .tag-ativo { background: #eefaf2; color: #217a40; }
+  .tag-em-pausa { background: #fff8ee; color: #b7570a; }
+  .tag-concluido { background: var(--surface2); color: var(--text3); }
+  .tag-cancelado { background: #fff0ee; color: #c0392b; }
+  .tag-a-fazer { background: #eef4ff; color: #1a5cb5; }
+  .tag-em-andamento { background: #f3eeff; color: #7c3aed; }
+  .tag-date { color: var(--text3); font-size: 11px; }
+
+  /* ── STATES ── */
+  .empty-state {
+    text-align: center; padding: 56px 24px;
+    background: var(--surface); border-radius: var(--radius);
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; color: var(--text2); }
+  .loading-state {
+    text-align: center; padding: 48px;
+    color: var(--text3); font-size: 14px;
+  }
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid var(--border-strong);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #1d1d1f; color: white; padding: 12px 20px;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    opacity: 0; transform: translateY(8px); transition: all 0.2s;
+    pointer-events: none; z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── STATUS DOT ── */
+  .status-bar {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text3); margin-bottom: 16px;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-green { background: var(--green); }
+  .dot-orange { background: var(--orange); }
+  .dot-red { background: var(--red); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px 16px; }
+    .topbar h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div id="config-overlay">
+  <div id="config-box">
+    <h2>Configurar acesso</h2>
+    <p>Para conectar ao seu Airtable, insira sua API key abaixo. Ela fica salva apenas no seu navegador (localStorage).</p>
+    <label>Personal Access Token do Airtable</label>
+    <input type="password" id="api-key-input" placeholder="patXXXXXXXXXXXXXX.XXXXXXXX..." />
+    <p class="hint">Gere em <a href="https://airtable.com/create/tokens" target="_blank">airtable.com/create/tokens</a> com scopes <code>data.records:read</code>, <code>data.records:write</code> e <code>schema.bases:read</code>.</p>
+    <button id="config-save" onclick="saveConfig()">Conectar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">Meu <span>GTD</span></div>
+    <div class="sidebar-section">Captura</div>
+    <div class="nav-item active" onclick="switchTab(0)" id="nav-0">
+      <span class="nav-icon">📥</span> Inbox
+      <span class="nav-badge" id="badge-0">—</span>
+    </div>
+    <div class="sidebar-section">Execução</div>
+    <div class="nav-item" onclick="switchTab(1)" id="nav-1">
+      <span class="nav-icon">✅</span> Próximas Ações
+      <span class="nav-badge" id="badge-1">—</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(2)" id="nav-2">
+      <span class="nav-icon">📁</span> Projetos
+      <span class="nav-badge" id="badge-2">—</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(3)" id="nav-3">
+      <span class="nav-icon">⏳</span> Aguardando
+      <span class="nav-badge" id="badge-3">—</span>
+    </div>
+    <div class="sidebar-section">Futuro</div>
+    <div class="nav-item" onclick="switchTab(4)" id="nav-4">
+      <span class="nav-icon">💡</span> Algum Dia
+      <span class="nav-badge" id="badge-4">—</span>
+    </div>
+    <div style="margin-top: auto; padding-top: 20px;">
+      <div class="nav-item" onclick="showConfig()" style="color: var(--text3); font-size: 13px;">
+        <span class="nav-icon">⚙️</span> Configurações
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <h1 id="page-title">📥 Inbox</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="syncCurrent()">↻ Sincronizar</button>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span class="dot dot-orange" id="status-dot"></span>
+      <span id="status-msg">Carregando...</span>
+    </div>
+
+    <div class="add-bar">
+      <input type="text" id="add-input" placeholder="Adicionar item... (Enter para salvar)" onkeydown="if(event.key==='Enter')addRecord()" />
+      <button onclick="addRecord()">+ Adicionar</button>
+    </div>
+
+    <div class="filters" id="filters"></div>
+    <div id="content"><div class="loading-state"><span class="spinner"></span>Carregando dados...</div></div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE_ID = "appMstraMVrSrbCl9";
+const TABLES = [
+  {
+    name: "📥 Inbox", tableId: "tblG8bKZ6UpcQvc64",
+    primary: "fld9kotZCiODV3wGh",
+    fields: { cat: "fldKsfmUCBz6a2VjG", date: "fldVjY1ILHprFVflo", done: "fldcaEmk59CzKTRom" }
+  },
+  {
+    name: "✅ Próximas Ações", tableId: "tblDApR2llSFFInUr",
+    primary: "fld9tReYoIAkM1rtZ",
+    fields: { cat: "fldauKng2Lm9HjyFy", date: "fldFj8YARIElznbiq", priority: "fldo9ILTSfJvUHS5f", status: "fldutUxFy5jDy3VZ3" }
+  },
+  {
+    name: "📁 Projetos", tableId: "tblJkoDzD5pNHw1xB",
+    primary: "fldOj6Ey9m1pAF4KW",
+    fields: { cat: "fldhzY2ZKYcImenQk", status: "fld3f69OYUm7CFSWH", date: "fldUrTEbpZK22Tm5n", next: "fldGszgLbfwp2S0KD" }
+  },
+  {
+    name: "⏳ Aguardando", tableId: "tbl9USu53kwjx1CI1",
+    primary: "fldAx8MQC8sm29CrQ",
+    fields: { cat: "fldJY1JYMpB3DddDo", from: "fldZdyPISEApuTJdy", asked: "fldPrBxLJD1Uwlr2E", followup: "fldC0AiuFvMm95E0V" }
+  },
+  {
+    name: "💡 Algum Dia", tableId: "tblrJj5K45apgyYkm",
+    primary: "fldc6Agvu28LGYWYS",
+    fields: { cat: "fldzvEXaEli7r1dey", notes: "fldmScHkrSf1bjqlb" }
+  }
+];
+const CATS = ["Tudo","Trabalho","Saúde","Família","Financeiro","Pessoal","Viagem","Estudo","Negócio","Outro"];
+const CAT_INFER = {
+  "trabalho": "Trabalho", "reunião": "Trabalho", "cliente": "Trabalho", "projeto": "Trabalho", "email": "Trabalho", "relatório": "Trabalho",
+  "saúde": "Saúde", "médico": "Saúde", "consulta": "Saúde", "academia": "Saúde", "exercício": "Saúde", "remédio": "Saúde",
+  "família": "Família", "filho": "Família", "filha": "Família", "mãe": "Família", "pai": "Família", "aniversário": "Família",
+  "banco": "Financeiro", "financeiro": "Financeiro", "boleto": "Financeiro", "imposto": "Financeiro", "investimento": "Financeiro", "dinheiro": "Financeiro", "pagar": "Financeiro",
+  "viagem": "Viagem", "passagem": "Viagem", "hotel": "Viagem", "voo": "Viagem", "férias": "Viagem",
+  "curso": "Estudo", "livro": "Estudo", "estudar": "Estudo", "aprender": "Estudo", "aula": "Estudo", "certificado": "Estudo", "leitura": "Estudo",
+  "negócio": "Negócio", "empresa": "Negócio", "startup": "Negócio", "produto": "Negócio", "lançar": "Negócio",
+};
+
+let API_KEY = "";
+let currentTab = 0;
+let currentCat = "Tudo";
+let cache = Array(5).fill(null);
+
+function inferCategory(text) {
+  const lower = text.toLowerCase();
+  for (const [kw, cat] of Object.entries(CAT_INFER)) {
+    if (lower.includes(kw)) return cat;
+  }
+  return "Pessoal";
+}
+
+function saveConfig() {
+  const val = document.getElementById("api-key-input").value.trim();
+  if (!val) { toast("Cole sua API key primeiro"); return; }
+  localStorage.setItem("gtd_airtable_key", val);
+  API_KEY = val;
+  document.getElementById("config-overlay").style.display = "none";
+  init();
+}
+
+function showConfig() {
+  document.getElementById("api-key-input").value = API_KEY;
+  document.getElementById("config-overlay").style.display = "flex";
+}
+
+function setStatus(type, msg) {
+  const dot = document.getElementById("status-dot");
+  dot.className = "dot " + (type === "ok" ? "dot-green" : type === "err" ? "dot-red" : "dot-orange");
+  document.getElementById("status-msg").textContent = msg;
+}
+
+function toast(msg, duration = 2500) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), duration);
+}
+
+async function airtableFetch(path, opts = {}) {
+  const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${path}`, {
+    ...opts,
+    headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json", ...(opts.headers || {}) }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function fetchTable(idx) {
+  const t = TABLES[idx];
+  let records = [], offset = null;
+  do {
+    const url = t.tableId + "?pageSize=100" + (offset ? `&offset=${offset}` : "");
+    const data = await airtableFetch(url);
+    records = records.concat(data.records || []);
+    offset = data.offset || null;
+  } while (offset);
+  cache[idx] = records;
+  updateBadge(idx, records.length);
+  return records;
+}
+
+function updateBadge(idx, count) {
+  document.getElementById("badge-" + idx).textContent = count;
+}
+
+function renderFilters() {
+  const el = document.getElementById("filters");
+  el.innerHTML = CATS.map(c =>
+    `<span class="filter-pill${c === currentCat ? " active" : ""}" onclick="filterCat('${c}')">${c}</span>`
+  ).join("");
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  renderFilters();
+  renderRecords();
+}
+
+function fv(record, fieldId) {
+  return record.fields?.[fieldId] ?? null;
+}
+
+function tagClass(val) {
+  if (!val) return "tag-default";
+  const v = val.toLowerCase().replace(/\s/g, "-").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return "tag-" + v;
+}
+
+function renderRecords() {
+  const t = TABLES[currentTab];
+  const el = document.getElementById("content");
+  const data = cache[currentTab];
+  if (!data) { el.innerHTML = '<div class="loading-state"><span class="spinner"></span>Carregando...</div>'; return; }
+
+  let list = data;
+  if (currentCat !== "Tudo") {
+    list = data.filter(r => fv(r, t.fields.cat) === currentCat);
+  }
+
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">✨</div><p>Nenhum item aqui ainda.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="records">${list.map(r => {
+    const name = fv(r, t.primary) || "(sem título)";
+    const cat = fv(r, t.fields.cat);
+    const done = currentTab === 0 ? fv(r, t.fields.done) : false;
+    const priority = t.fields.priority ? fv(r, t.fields.priority) : null;
+    const status = t.fields.status ? fv(r, t.fields.status) : null;
+    const date = t.fields.date ? fv(r, t.fields.date) : null;
+    const asked = t.fields.asked ? fv(r, t.fields.asked) : null;
+    const followup = t.fields.followup ? fv(r, t.fields.followup) : null;
+    const from = t.fields.from ? fv(r, t.fields.from) : null;
+    const next = t.fields.next ? fv(r, t.fields.next) : null;
+
+    let tags = "";
+    if (cat) tags += `<span class="tag tag-default">${cat}</span>`;
+    if (priority) tags += `<span class="tag ${tagClass(priority)}">${priority}</span>`;
+    if (status) tags += `<span class="tag ${tagClass(status)}">${status}</span>`;
+    if (date) tags += `<span class="tag-date">${date}</span>`;
+    if (from) tags += `<span class="tag tag-default">De: ${from}</span>`;
+    if (followup) tags += `<span class="tag-date">Follow-up: ${followup}</span>`;
+    if (asked) tags += `<span class="tag-date">Pedido: ${asked}</span>`;
+
+    const showCheck = currentTab === 0;
+
+    return `<div class="record">
+      ${showCheck ? `<div class="record-check${done ? " checked" : ""}" onclick="toggleDone('${r.id}', ${!done}, this)"></div>` : ""}
+      <div class="record-body">
+        <div class="record-name${done ? " done" : ""}">${escapeHtml(name)}</div>
+        ${next ? `<div style="font-size:12px;color:var(--text3);margin-bottom:4px;">→ ${escapeHtml(next)}</div>` : ""}
+        <div class="record-meta">${tags}</div>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+async function toggleDone(recordId, newVal, el) {
+  const t = TABLES[0];
+  el.classList.toggle("checked", newVal);
+  const nameEl = el.closest(".record").querySelector(".record-name");
+  nameEl?.classList.toggle("done", newVal);
+  try {
+    await airtableFetch(t.tableId + "/" + recordId, {
+      method: "PATCH",
+      body: JSON.stringify({ fields: { [t.fields.done]: newVal } })
+    });
+    const rec = cache[0]?.find(r => r.id === recordId);
+    if (rec) rec.fields[t.fields.done] = newVal;
+    toast(newVal ? "Marcado como processado" : "Desmarcado");
+  } catch { toast("Erro ao atualizar"); }
+}
+
+async function addRecord() {
+  const input = document.getElementById("add-input");
+  const val = input.value.trim();
+  if (!val) return;
+  input.value = "";
+  const t = TABLES[currentTab];
+  const cat = inferCategory(val);
+  setStatus("loading", "Adicionando...");
+  try {
+    const fields = { [t.primary]: val };
+    if (t.fields.cat) fields[t.fields.cat] = cat;
+    if (currentTab === 0) {
+      fields[t.fields.date] = new Date().toISOString().split("T")[0];
+      fields[t.fields.done] = false;
+    }
+    const data = await airtableFetch(t.tableId, {
+      method: "POST",
+      body: JSON.stringify({ records: [{ fields }] })
+    });
+    const newRec = data.records?.[0];
+    if (newRec) {
+      if (!cache[currentTab]) cache[currentTab] = [];
+      cache[currentTab].unshift(newRec);
+      updateBadge(currentTab, cache[currentTab].length);
+    }
+    renderRecords();
+    setStatus("ok", cache[currentTab].length + " registros");
+    toast(`Adicionado em ${t.name} → ${cat}`);
+  } catch(e) {
+    setStatus("err", "Erro ao adicionar");
+    toast("Erro ao adicionar item");
+  }
+}
+
+async function syncCurrent() {
+  setStatus("loading", "Sincronizando...");
+  cache[currentTab] = null;
+  renderRecords();
+  try {
+    const records = await fetchTable(currentTab);
+    setStatus("ok", records.length + " registros em " + TABLES[currentTab].name);
+    renderRecords();
+    toast("Sincronizado");
+  } catch(e) {
+    setStatus("err", "Erro de conexão");
+    toast("Erro ao sincronizar");
+  }
+}
+
+function switchTab(idx) {
+  currentTab = idx;
+  currentCat = "Tudo";
+  document.querySelectorAll(".nav-item").forEach((n,i) => n.classList.toggle("active", i === idx));
+  document.getElementById("page-title").textContent = TABLES[idx].name;
+  renderFilters();
+  if (cache[idx]) {
+    renderRecords();
+  } else {
+    document.getElementById("content").innerHTML = '<div class="loading-state"><span class="spinner"></span>Carregando...</div>';
+    loadTab(idx);
+  }
+}
+
+async function loadTab(idx) {
+  setStatus("loading", "Carregando " + TABLES[idx].name + "...");
+  try {
+    const records = await fetchTable(idx);
+    setStatus("ok", records.length + " registros em " + TABLES[idx].name);
+    if (currentTab === idx) renderRecords();
+  } catch(e) {
+    setStatus("err", "Erro ao carregar. Verifique sua API key.");
+    if (currentTab === idx) {
+      document.getElementById("content").innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Erro ao conectar. Verifique sua API key em Configurações.</p></div>';
+    }
+  }
+}
+
+async function init() {
+  renderFilters();
+  await loadTab(0);
+  // Preload demais tabelas em background
+  for (let i = 1; i < 5; i++) loadTab(i);
+}
+
+// Boot
+const saved = localStorage.getItem("gtd_airtable_key");
+if (saved) {
+  API_KEY = saved;
+  document.getElementById("config-overlay").style.display = "none";
+  init();
+}
+</script>
+</body>
+</html>
