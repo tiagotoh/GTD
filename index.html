@@ -393,7 +393,7 @@ function renderRecords(){
 async function fetchTab(idx){
   const t=T[idx]; let records=[], offset=null;
   do {
-    const qs="?pageSize=100"+(offset?`&offset=${offset}`:"");
+    const qs="?pageSize=100&returnFieldsByFieldId=true"+(offset?`&offset=${offset}`:"");
     const d = await api(t.id+qs);
     records=records.concat(d.records||[]);
     offset=d.offset||null;
