@@ -153,21 +153,44 @@
   .cat-btn:hover { border-color: var(--accent); color: var(--accent); }
   .cat-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
 
-  /* ── RECORDS ── */
-  .records-wrap { flex: 1; overflow-y: auto; padding: 12px 28px 28px; }
-  .records-list {
-    background: white; border-radius: var(--radius);
-    box-shadow: var(--shadow); overflow: hidden;
+  /* ── CARDS ── */
+  .records-wrap { flex: 1; overflow-y: auto; padding: 14px 28px 28px; }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
     border: 1px solid var(--border);
+    padding: 16px 16px 14px 19px;
+    display: flex; flex-direction: column; gap: 9px;
+    animation: fadeUp 0.2s ease both;
+    transition: box-shadow 0.18s, transform 0.18s;
+    cursor: default; position: relative; overflow: hidden;
   }
-  .record-row {
-    display: flex; align-items: flex-start; gap: 12px;
-    padding: 13px 16px; border-bottom: 1px solid var(--border);
-    transition: background 0.08s; cursor: default;
-    animation: fadeUp 0.18s ease both;
+  .card::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--card-accent, var(--surface3));
   }
-  .record-row:last-child { border-bottom: none; }
-  .record-row:hover { background: #fafafa; }
+  .card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+
+  .card-header { display: flex; align-items: flex-start; gap: 10px; }
+  .card-name {
+    flex: 1; font-size: 14px; font-weight: 500; color: var(--text);
+    line-height: 1.45;
+  }
+  .card-name.done { color: var(--text4); text-decoration: line-through; font-weight: 400; }
+  .card-sub { font-size: 12px; color: var(--text3); line-height: 1.4; }
+  .card-footer { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; padding-top: 2px; }
 
   .check-circle {
     width: 20px; height: 20px; border-radius: 50%;
@@ -183,26 +206,17 @@
     transform: rotate(-45deg) translateY(-1px); display: block;
   }
 
-  .record-body { flex: 1; min-width: 0; }
-  .record-name {
-    font-size: 14px; font-weight: 400; color: var(--text);
-    line-height: 1.4; margin-bottom: 5px;
-  }
-  .record-name.done { color: var(--text4); text-decoration: line-through; }
-  .record-sub { font-size: 12px; color: var(--text3); margin-bottom: 5px; }
-  .record-tags { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-
   .tag {
-    font-size: 11px; font-weight: 500; padding: 2px 8px;
+    font-size: 11px; font-weight: 500; padding: 2px 9px;
     border-radius: var(--radius-pill); white-space: nowrap;
   }
-  .tag-gray { background: var(--surface3); color: var(--text2); }
-  .tag-red { background: var(--red-bg); color: var(--red); }
-  .tag-orange { background: var(--orange-bg); color: #c07000; }
-  .tag-green { background: var(--green-bg); color: #1a7a32; }
-  .tag-blue { background: var(--accent-bg); color: var(--accent); }
+  .tag-gray   { background: var(--surface3); color: var(--text2); }
+  .tag-red    { background: var(--red-bg);    color: var(--red); }
+  .tag-orange { background: var(--orange-bg); color: #b36200; }
+  .tag-green  { background: var(--green-bg);  color: #1a7a32; }
+  .tag-blue   { background: var(--accent-bg); color: var(--accent); }
   .tag-purple { background: var(--purple-bg); color: var(--purple); }
-  .tag-date { font-size: 11px; color: var(--text4); }
+  .tag-date   { font-size: 11px; color: var(--text4); }
 
   /* ── EMPTY / LOADING ── */
   .empty-state {
@@ -318,10 +332,12 @@ const T = [
   { name:"⏳ Aguardando",     id:"tbl9USu53kwjx1CI1", pk:"fldAx8MQC8sm29CrQ", f:{ cat:"fldJY1JYMpB3DddDo", from:"fldZdyPISEApuTJdy", asked:"fldPrBxLJD1Uwlr2E", fu:"fldC0AiuFvMm95E0V" } },
   { name:"💡 Algum Dia",      id:"tblrJj5K45apgyYkm", pk:"fldc6Agvu28LGYWYS", f:{ cat:"fldzvEXaEli7r1dey", notes:"fldmScHkrSf1bjqlb" } }
 ];
-const CATS = ["Tudo","Trabalho","Saúde","Família","Financeiro","Pessoal","Viagem","Estudo","Negócio","Outro"];
+const ALL_CATS = ["Trabalho","Saúde","Família","Financeiro","Pessoal","Viagem","Estudo","Negócio","Outro"];
 const KW = { "trabalho":"Trabalho","reunião":"Trabalho","cliente":"Trabalho","email":"Trabalho","relatório":"Trabalho","saúde":"Saúde","médico":"Saúde","consulta":"Saúde","academia":"Saúde","remédio":"Saúde","família":"Família","filho":"Família","mãe":"Família","pai":"Família","aniversário":"Família","banco":"Financeiro","boleto":"Financeiro","imposto":"Financeiro","investimento":"Financeiro","pagar":"Financeiro","viagem":"Viagem","passagem":"Viagem","hotel":"Viagem","voo":"Viagem","férias":"Viagem","curso":"Estudo","livro":"Estudo","estudar":"Estudo","aprender":"Estudo","aula":"Estudo","negócio":"Negócio","empresa":"Negócio","startup":"Negócio" };
-const PRI_CLS = { "Alta":"tag-red","Média":"tag-orange","Baixa":"tag-green" };
-const STA_CLS = { "A fazer":"tag-blue","Em andamento":"tag-purple","Concluído":"tag-gray","Ativo":"tag-green","Em pausa":"tag-orange","Cancelado":"tag-red" };
+const PRI_CLS   = { "Alta":"tag-red","Média":"tag-orange","Baixa":"tag-green" };
+const STA_CLS   = { "A fazer":"tag-blue","Em andamento":"tag-purple","Concluído":"tag-gray","Ativo":"tag-green","Em pausa":"tag-orange","Cancelado":"tag-red" };
+const PRI_ACCENT = { "Alta":"var(--red)","Média":"var(--orange)","Baixa":"var(--green)" };
+const STA_ACCENT = { "Em andamento":"var(--purple)","Ativo":"var(--green)","A fazer":"var(--accent)" };
 
 let tab=0, cat="Tudo", cache=Array(5).fill(null);
 
@@ -338,7 +354,12 @@ async function api(path, opts={}){
 }
 
 function renderCats(){
-  document.getElementById("cat-row").innerHTML = CATS.map(c=>
+  const t = T[tab], data = cache[tab] || [];
+  const present = new Set(data.filter(r=>fv(r,t.pk)).map(r=>fv(r,t.f.cat)).filter(Boolean));
+  const cats = ALL_CATS.filter(c=>present.has(c));
+  const row = document.getElementById("cat-row");
+  if(!cats.length){ row.innerHTML=""; return; }
+  row.innerHTML = ["Tudo",...cats].map(c=>
     `<button class="cat-btn${c===cat?" active":""}" onclick="filterCat('${c}')">${c}</button>`
   ).join("");
 }
@@ -357,7 +378,7 @@ function renderRecords(){
     el.innerHTML='<div class="empty-state"><div class="empty-icon">✨</div><p>Nenhum item aqui.</p></div>'; return;
   }
 
-  el.innerHTML = `<div class="records-list">${list.map(r=>{
+  el.innerHTML = `<div class="cards-grid">${list.map(r=>{
     const name = fv(r,t.pk)||"";
     const done = tab===0 ? !!fv(r,t.f.done) : false;
     const catV = fv(r,t.f.cat);
@@ -369,24 +390,26 @@ function renderRecords(){
     const fu   = t.f.fu   ? fv(r,t.f.fu)  : null;
     const next = t.f.next ? fv(r,t.f.next) : null;
 
-    let tags="";
-    if(catV) tags+=`<span class="tag tag-gray">${esc(catV)}</span>`;
-    if(pri)  tags+=`<span class="tag ${PRI_CLS[pri]||"tag-gray"}">${esc(pri)}</span>`;
-    if(sta)  tags+=`<span class="tag ${STA_CLS[sta]||"tag-gray"}">${esc(sta)}</span>`;
-    if(date) tags+=`<span class="tag-date">${date}</span>`;
-    if(from) tags+=`<span class="tag tag-gray">De: ${esc(from)}</span>`;
-    if(asked)tags+=`<span class="tag-date">Pedido: ${asked}</span>`;
-    if(fu)   tags+=`<span class="tag-date">Follow-up: ${fu}</span>`;
+    const accent = (pri && PRI_ACCENT[pri]) || (sta && STA_ACCENT[sta]) || "var(--surface3)";
+
+    let footer="";
+    if(catV) footer+=`<span class="tag tag-gray">${esc(catV)}</span>`;
+    if(pri)  footer+=`<span class="tag ${PRI_CLS[pri]||"tag-gray"}">${esc(pri)}</span>`;
+    if(sta)  footer+=`<span class="tag ${STA_CLS[sta]||"tag-gray"}">${esc(sta)}</span>`;
+    if(date) footer+=`<span class="tag-date">${date}</span>`;
+    if(from) footer+=`<span class="tag tag-gray">De: ${esc(from)}</span>`;
+    if(asked)footer+=`<span class="tag-date">Pedido: ${asked}</span>`;
+    if(fu)   footer+=`<span class="tag-date">Follow-up: ${fu}</span>`;
 
     const chk = tab===0
       ? `<div class="check-circle${done?" done":""}" onclick="toggleDone('${r.id}',${!done},this)"></div>`
       : "";
-    const sub = next ? `<div class="record-sub">→ ${esc(next)}</div>` : "";
+    const sub = next ? `<div class="card-sub">→ ${esc(next)}</div>` : "";
 
-    return `<div class="record-row">${chk}<div class="record-body">
-      <div class="record-name${done?" done":""}">${esc(name)}</div>
-      ${sub}<div class="record-tags">${tags}</div>
-    </div></div>`;
+    return `<div class="card" style="--card-accent:${accent}">
+      <div class="card-header">${chk}<div class="card-name${done?" done":""}">${esc(name)}</div></div>
+      ${sub}${footer?`<div class="card-footer">${footer}</div>`:""}
+    </div>`;
   }).join("")}</div>`;
 }
 
@@ -408,7 +431,7 @@ async function loadTab(idx){
   setStatus("loading","Carregando "+T[idx].name+"...");
   try {
     const r=await fetchTab(idx);
-    if(tab===idx){ setStatus("ok",r.filter(x=>fv(x,T[idx].pk)).length+" registros"); renderRecords(); }
+    if(tab===idx){ setStatus("ok",r.filter(x=>fv(x,T[idx].pk)).length+" registros"); renderCats(); renderRecords(); }
   } catch {
     if(tab===idx){ setStatus("err","Erro ao conectar"); document.getElementById("records-wrap").innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>Erro ao conectar com o Airtable.</p></div>'; }
   }
