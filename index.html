@@ -327,8 +327,8 @@
 const BASE = "appMstraMVrSrbCl9";
 const T = [
   { name:"📥 Inbox",          id:"tblG8bKZ6UpcQvc64", pk:"fld9kotZCiODV3wGh", f:{ cat:"fldKsfmUCBz6a2VjG", date:"fldVjY1ILHprFVflo", done:"fldcaEmk59CzKTRom" } },
-  { name:"✅ Próximas Ações", id:"tblDApR2llSFFInUr", pk:"fld9tReYoIAkM1rtZ", f:{ cat:"fldauKng2Lm9HjyFy", date:"fldFj8YARIElznbiq", pri:"fldo9ILTSfJvUHS5f", sta:"fldutUxFy5jDy3VZ3" } },
-  { name:"📁 Projetos",       id:"tblJkoDzD5pNHw1xB", pk:"fldOj6Ey9m1pAF4KW", f:{ cat:"fldhzY2ZKYcImenQk", sta:"fld3f69OYUm7CFSWH", date:"fldUrTEbpZK22Tm5n", next:"fldGszgLbfwp2S0KD" } },
+  { name:"✅ Próximas Ações", id:"tblDApR2llSFFInUr", pk:"fld9tReYoIAkM1rtZ", f:{ cat:"fldcgjK0m26F58yNI", date:"fldFj8YARIElznbiq", pri:"fldo9ILTSfJvUHS5f", sta:"fldutUxFy5jDy3VZ3" } },
+  { name:"📁 Projetos",       id:"tblJkoDzD5pNHw1xB", pk:"fldOj6Ey9m1pAF4KW", f:{ cat:"fldF4GnMlkWOuLE7w", sta:"fld3f69OYUm7CFSWH", date:"fldUrTEbpZK22Tm5n", next:"fldGszgLbfwp2S0KD" } },
   { name:"⏳ Aguardando",     id:"tbl9USu53kwjx1CI1", pk:"fldAx8MQC8sm29CrQ", f:{ cat:"fldJY1JYMpB3DddDo", from:"fldZdyPISEApuTJdy", asked:"fldPrBxLJD1Uwlr2E", fu:"fldC0AiuFvMm95E0V" } },
   { name:"💡 Algum Dia",      id:"tblrJj5K45apgyYkm", pk:"fldc6Agvu28LGYWYS", f:{ cat:"fldzvEXaEli7r1dey", notes:"fldmScHkrSf1bjqlb" } }
 ];
@@ -355,8 +355,7 @@ async function api(path, opts={}){
 
 function renderCats(){
   const t = T[tab], data = cache[tab] || [];
-  const present = new Set(data.filter(r=>fv(r,t.pk)).map(r=>fv(r,t.f.cat)).filter(Boolean));
-  const cats = ALL_CATS.filter(c=>present.has(c));
+  const cats = [...new Set(data.filter(r=>fv(r,t.pk)).map(r=>fv(r,t.f.cat)).filter(Boolean))].sort();
   const row = document.getElementById("cat-row");
   if(!cats.length){ row.innerHTML=""; return; }
   row.innerHTML = ["Tudo",...cats].map(c=>
